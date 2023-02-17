@@ -1,4 +1,7 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,25 +26,29 @@ class MyApp extends StatelessWidget {
 }
 
 class Contact {
+  final String id;
   final String name;
 
-  const Contact({
+  Contact({
     required this.name,
-  });
+  }) : id = const Uuid().v4();
 }
 
-class ContactBook {
+class ContactBook extends ValueNotifier<List<Contact>> {
   // Singleton Design Pattern
-  ContactBook._sharedInstance();
+  ContactBook._sharedInstance() : super([]);
   static final ContactBook _shared = ContactBook._sharedInstance();
   factory ContactBook() => _shared;
 
   final List<Contact> _contacts = [];
 
-  int get length => _contacts.length;
+  int get length => value.length;
 
   void add({required Contact contact}) {
-    _contacts.add(contact);
+    final contacts = value;
+    contacts.add(contact);
+    value = contacts;
+    notifyListeners();
   }
 
   void remove({required Contact contact}) {
