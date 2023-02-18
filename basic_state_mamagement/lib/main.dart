@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -40,23 +38,24 @@ class ContactBook extends ValueNotifier<List<Contact>> {
   static final ContactBook _shared = ContactBook._sharedInstance();
   factory ContactBook() => _shared;
 
-  final List<Contact> _contacts = [];
-
   int get length => value.length;
 
   void add({required Contact contact}) {
     final contacts = value;
     contacts.add(contact);
-    value = contacts;
     notifyListeners();
   }
 
   void remove({required Contact contact}) {
-    _contacts.remove(contact);
+    final contacts = value;
+    if (contacts.contains(contact)) {
+      contacts.remove(contact);
+      notifyListeners();
+    }
   }
 
   Contact? contact({required int atIndex}) =>
-      _contacts.length > atIndex ? _contacts[atIndex] : null;
+      value.length > atIndex ? value[atIndex] : null;
 }
 
 class MyHomePage extends StatelessWidget {
@@ -69,14 +68,19 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Home Page'),
       ),
-      body: ListView.builder(
-        itemCount: contactBook.length,
-        itemBuilder: (context, index) {
-          final Contact contact = contactBook.contact(atIndex: index)!;
-          return ListTile(
-            title: Text(
-              contact.name,
-            ),
+      body: ValueListenableBuilder(
+        valueListenable: ContactBook(),
+        builder: (context, value, child) {
+          return ListView.builder(
+            itemCount: contactBook.length,
+            itemBuilder: (context, index) {
+              final Contact contact = contactBook.contact(atIndex: index)!;
+              return ListTile(
+                title: Text(
+                  contact.name,
+                ),
+              );
+            },
           );
         },
       ),
